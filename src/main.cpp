@@ -8,7 +8,8 @@
 #define SCREEN_HEIGHT 64
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
-#define BUTTON_PIN 4 // Pino D4 do botao
+#define JUMP_PIN 4 // Pino D4: Iniciar (Start) e Pular
+#define DUCK_PIN 5 // Pino D5: Abaixar
 
 Preferences prefs;
 int score = 0;
@@ -16,18 +17,19 @@ int highScore = 0;
 int dinoY = 48;
 int dinoV = 0;
 bool isJumping = false;
-bool gameStarted = false; // Controla o estado da tela inicial
+bool isDucking = false;
+bool gameStarted = false; // Controla a tela de inicio
 
 // Obstaculos
 int obstacleX = 128;
 int obstacleY = 48;
-int obstacleType = 0; 
+int obstacleType = 0; // 0 ou 1: Cacto (Pular) | 2: Passaro (Abaixar)
 int obstacleSpeed = 5;
 
 bool legState = false;
 bool wingState = false;
 
-// Bitmaps do Dino
+// Bitmaps do Dino Correndo
 static const unsigned char PROGMEM dino_run1[] = {
   0x07, 0x80, 0x1f, 0xc0, 0x3f, 0xe0, 0x3f, 0xe0, 0x3f, 0xe0, 0x38, 0x00, 0x7e, 0x00, 0x7e, 0x00, 
   0x7e, 0x00, 0x7e, 0x00, 0x7e, 0x00, 0x60, 0x00, 0x70, 0x00, 0x30, 0x00, 0x18, 0x00, 0x08, 0x00
@@ -36,6 +38,17 @@ static const unsigned char PROGMEM dino_run1[] = {
 static const unsigned char PROGMEM dino_run2[] = {
   0x07, 0x80, 0x1f, 0xc0, 0x3f, 0xe0, 0x3f, 0xe0, 0x3f, 0xe0, 0x38, 0x00, 0x7e, 0x00, 0x7e, 0x00, 
   0x7e, 0x00, 0x7e, 0x00, 0x7e, 0x00, 0x06, 0x00, 0x0e, 0x00, 0x0c, 0x00, 0x18, 0x00, 0x10, 0x00
+};
+
+// Bitmaps do Dino Abaixado
+static const unsigned char PROGMEM dino_duck1[] = {
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0f, 0xe0, 0x1f, 0xf0, 
+  0x3f, 0xf8, 0x3f, 0xf8, 0x7f, 0xfc, 0x7f, 0xfc, 0x3f, 0x00, 0x3e, 0x00, 0x1c, 0x00, 0x08, 0x00
+};
+
+static const unsigned char PROGMEM dino_duck2[] = {
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0f, 0xe0, 0x1f, 0xf0, 
+  0x3f, 0xf8, 0x3f, 0xf8, 0x7f, 0xfc, 0x7f, 0xfc, 0x03, 0xf0, 0x07, 0xc0, 0x03, 0x80, 0x01, 0x00
 };
 
 // Bitmaps dos Cactos
@@ -71,9 +84,9 @@ void resetObstacle() {
   obstacleType = random(0, 3);
   
   if (obstacleType == 0 || obstacleType == 1) {
-    obstacleY = 48;
+    obstacleY = 48; // Cacto no chao (Exige PULAR)
   } else {
-    obstacleY = 44;
+    obstacleY = 38; // Passaro na altura da cabeca (Exige ABAIXAR)
   }
 }
 
@@ -84,7 +97,6 @@ void showStartScreen() {
   display.setCursor(10, 8);
   display.print("DINO GAME");
 
-  // Desenha o Dino parado na tela de inicio
   display.drawBitmap(56, 26, dino_run1, 16, 16, WHITE);
 
   display.setTextSize(1);
@@ -121,11 +133,12 @@ void showVictoryScreen() {
   display.display();
   delay(4000);
 
-  gameStarted = false; // Retorna para a tela de Start
+  gameStarted = false; // Retorna para a tela inicial
 }
 
 void setup() {
-  pinMode(BUTTON_PIN, INPUT_PULLUP);
+  pinMode(JUMP_PIN, INPUT_PULLUP);
+  pinMode(DUCK_PIN, INPUT_PULLUP);
 
   if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
     for(;;);
@@ -141,16 +154,16 @@ void setup() {
 }
 
 void loop() {
-  // Tela Inicial (Aguarda clique do jogador)
+  // Tela Inicial (Espera o botao de Pulo/Start ser acionado)
   if (!gameStarted) {
     showStartScreen();
     
-    if (digitalRead(BUTTON_PIN) == LOW) {
+    if (digitalRead(JUMP_PIN) == LOW) {
       score = 0;
       dinoY = 48;
       resetObstacle();
       gameStarted = true;
-      delay(300); // Pausa para evitar que o clique de start vire um pulo instantaneo
+      delay(300); // Pausa para evitar pulo acidental no inicio
     }
     delay(50);
     return;
@@ -158,7 +171,7 @@ void loop() {
 
   display.clearDisplay();
 
-  // Placar
+  // Placar Superior
   display.setTextSize(1);
   display.setCursor(0, 0);
   display.print("PTS:");
@@ -167,8 +180,15 @@ void loop() {
   display.print("HI:");
   display.print(highScore);
 
-  // Leitura do Botao (Pulo)
-  if (digitalRead(BUTTON_PIN) == LOW && !isJumping) {
+  // Leitura do Botao de Abaixar (so funciona se nao estiver no ar)
+  if (digitalRead(DUCK_PIN) == LOW && !isJumping) {
+    isDucking = true;
+  } else {
+    isDucking = false;
+  }
+
+  // Leitura do Botao de Pulo (so funciona se nao estiver abaixado)
+  if (digitalRead(JUMP_PIN) == LOW && !isJumping && !isDucking) {
     dinoV = -8;
     isJumping = true;
   }
@@ -199,18 +219,24 @@ void loop() {
     resetObstacle();
   }
 
-  // Anima pernas
-  if (!isJumping) legState = !legState;
-  if (legState) {
-    display.drawBitmap(16, dinoY, dino_run1, 16, 16, WHITE);
+  // Animação do Dino (Em pe vs Abaixado)
+  legState = !legState;
+  if (isDucking) {
+    if (legState) {
+      display.drawBitmap(16, dinoY, dino_duck1, 16, 16, WHITE);
+    } else {
+      display.drawBitmap(16, dinoY, dino_duck2, 16, 16, WHITE);
+    }
   } else {
-    display.drawBitmap(16, dinoY, dino_run2, 16, 16, WHITE);
+    if (legState || isJumping) {
+      display.drawBitmap(16, dinoY, dino_run1, 16, 16, WHITE);
+    } else {
+      display.drawBitmap(16, dinoY, dino_run2, 16, 16, WHITE);
+    }
   }
 
-  // Anima asas
-  wingState = !wingState;
-
   // Desenha Obstaculo
+  wingState = !wingState;
   if (obstacleType == 0) {
     display.drawBitmap(obstacleX, obstacleY, cactus1_bmp, 16, 16, WHITE);
   } else if (obstacleType == 1) {
@@ -223,10 +249,16 @@ void loop() {
     }
   }
 
-  // Sistema de Colisao
+  // Detecção de Colisão Precisa
   bool hit = false;
-  if (obstacleX < 28 && obstacleX > 4) {
-    if (dinoY < (obstacleY + 13) && (dinoY + 13) > obstacleY) {
+  if (obstacleX < 28 && obstacleX > 4) { // Posição X sobreposta
+    int dinoTop = isDucking ? (dinoY + 8) : dinoY; // Se abaixado, a cabeca abaixa 8 pixels
+    int dinoBottom = dinoY + 16;
+
+    int obsTop = obstacleY;
+    int obsBottom = obstacleY + 14;
+
+    if (dinoTop < obsBottom && dinoBottom > obsTop) {
       hit = true;
     }
   }
