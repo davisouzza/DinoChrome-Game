@@ -1,3 +1,10 @@
+O erro de renderização aconteceu por dois motivos:
+
+1. **Sub-listas quebradas:** A indentação dos itens com emojis (`🌵` e `🦅`) dentro de **Obstáculos Dinâmicos** não seguiu a regra de 2 espaços do Markdown.
+2. **Excesso de negrito nas tabelas:** O uso de `**` em todas as células das tabelas deixou o código muito poluído, estourando a largura da tela.
+
+Aqui está o código ajustado e com a sintaxe corrigida para copiar e colar no seu `README.md`:
+
 ```markdown
 # 🦖 Dino Chrome Game - ESP32
 
@@ -18,16 +25,16 @@ Um remake do clássico jogo do dinossauro do Google Chrome executado de forma na
 
 ## 🎮 Demonstração e Recursos
 
-- **Tela Inicial (Start Screen):** Exibe o título do jogo e a pontuação máxima gravada.
-- **Física de Pulo e Gravidade:** Cálculo vetorial no eixo Y simulando aceleração gravitacional no pulo.
-- **Mecânica de Esquiva (Agachar):** Ajuste dinâmico de *hitbox* para esquivar de obstáculos aéreos.
-- **Obstáculos Dinâmicos:**
-  - 🌵 **Cactos no chão:** Exigem que o jogador faça pulos precisos.
-  - 🦅 **Pássaros no ar:** Voam na altura da cabeça, exigindo que o jogador se abaixe.
-- **Dificuldade Escalável:** A velocidade do jogo inicia em 5 e aumenta dinamicamente a cada 15 pontos (até a velocidade máxima 9).
-- **Persistência de Recorde (NVS):** O recorde (*High Score*) é salvo na memória flash interna do ESP32 utilizando a biblioteca `Preferences.h`, mantendo a pontuação mesmo após desligar a placa.
-- **Tela de Vitória:** Tela com troféu desenhado em Pixel Art ao atingir a pontuação máxima de **100 pontos**.
-- **Animações em Pixel Art:** Animações para corrida do Dino, agachamento e bater de asas dos pássaros.
+* **Tela Inicial (Start Screen):** Exibe o título do jogo e a pontuação máxima gravada.
+* **Física de Pulo e Gravidade:** Cálculo vetorial no eixo Y simulando aceleração gravitacional no pulo.
+* **Mecânica de Esquiva (Agachar):** Ajuste dinâmico de *hitbox* para esquivar de obstáculos aéreos.
+* **Obstáculos Dinâmicos:**
+  * **Cactos no chão:** Exigem que o jogador faça pulos precisos.
+  * **Pássaros no ar:** Voam na altura da cabeça, exigindo que o jogador se abaixe.
+* **Dificuldade Escalável:** A velocidade do jogo inicia em 5 e aumenta dinamicamente a cada 15 pontos (até a velocidade máxima 9).
+* **Persistência de Recorde (NVS):** O recorde (*High Score*) é salvo na memória flash interna do ESP32 utilizando a biblioteca `Preferences.h`.
+* **Tela de Vitória:** Exibe um troféu desenhado em Pixel Art ao atingir a pontuação máxima de **100 pontos**.
+* **Animações em Pixel Art:** Animações para corrida do Dino, agachamento e bater de asas dos pássaros.
 
 ---
 
@@ -35,11 +42,11 @@ Um remake do clássico jogo do dinossauro do Google Chrome executado de forma na
 
 | Componente | Quantidade | Descrição |
 | :--- | :---: | :--- |
-| **ESP32 DevKit v1** | 1 | Microcontrolador principal de 32 bits |
-| **Display OLED SSD1306** | 1 | Tela 128x64 pixels com comunicação I2C |
-| **Push Buttons (Chave Tátil)** | 2 | Botões para os comandos de Pulo/Start e Agachar |
-| **Protoboard** | 1 | Base para montagem do circuito |
-| **Cabos Jumper** | Vários | Conexões elétricas (Macho-Fêmea / Macho-Macho) |
+| ESP32 DevKit v1 | 1 | Microcontrolador principal de 32 bits |
+| Display OLED SSD1306 | 1 | Tela 128x64 pixels com comunicação I2C |
+| Push Buttons (Chave Tátil) | 2 | Botões para os comandos de Pulo/Start e Agachar |
+| Protoboard | 1 | Base para montagem do circuito |
+| Cabos Jumper | Vários | Conexões elétricas (Macho-Fêmea / Macho-Macho) |
 
 ---
 
@@ -48,18 +55,18 @@ Um remake do clássico jogo do dinossauro do Google Chrome executado de forma na
 ### 1. Display OLED (I2C)
 | Display OLED | Pino ESP32 | Função |
 | :---: | :---: | :--- |
-| **VCC** | **3V3** | Alimentação 3.3V |
-| **GND** | **GND** | Terra |
-| **SDA** | **GPIO 21 (D21)** | Linha de Dados I2C |
-| **SCL** | **GPIO 22 (D22)** | Linha de Clock I2C |
+| VCC | 3V3 | Alimentação 3.3V |
+| GND | GND | Terra |
+| SDA | GPIO 21 (D21) | Linha de Dados I2C |
+| SCL | GPIO 22 (D22) | Linha de Clock I2C |
 
 ### 2. Botões de Controle
 Os botões utilizam os resistores internos do ESP32 via modo `INPUT_PULLUP`, dispensando resistores externos.
 
 | Botão | Pino ESP32 | Conexão Secundária | Função no Jogo |
 | :--- | :---: | :---: | :--- |
-| **Botão 1 (Direita)** | **GPIO 4 (D4)** | **GND** | Iniciar Jogo (Start) / Pular |
-| **Botão 2 (Esquerda)** | **GPIO 5 (D5)** | **GND** | Abaixar (Agachar) |
+| Botão 1 (Direita) | GPIO 4 (D4) | GND | Iniciar Jogo (Start) / Pular |
+| Botão 2 (Esquerda) | GPIO 5 (D5) | GND | Abaixar (Agachar) |
 
 ---
 
