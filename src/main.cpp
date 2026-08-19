@@ -16,6 +16,7 @@ int highScore = 0;
 int dinoY = 48;
 int dinoV = 0;
 bool isJumping = false;
+bool gameStarted = false; // Controla o estado da tela inicial
 
 // Obstaculos
 int obstacleX = 128;
@@ -67,15 +68,34 @@ static const unsigned char PROGMEM trophy_bmp[] = {
 
 void resetObstacle() {
   obstacleX = 128;
-  obstacleType = random(0, 4);
+  obstacleType = random(0, 3);
   
   if (obstacleType == 0 || obstacleType == 1) {
     obstacleY = 48;
-  } else if (obstacleType == 2) {
+  } else {
     obstacleY = 44;
-  } else if (obstacleType == 3) {
-    obstacleY = 30; // Passaro Alto
   }
+}
+
+void showStartScreen() {
+  display.clearDisplay();
+  
+  display.setTextSize(2);
+  display.setCursor(10, 8);
+  display.print("DINO GAME");
+
+  // Desenha o Dino parado na tela de inicio
+  display.drawBitmap(56, 26, dino_run1, 16, 16, WHITE);
+
+  display.setTextSize(1);
+  display.setCursor(12, 45);
+  display.print("Aperte para iniciar");
+
+  display.setCursor(35, 56);
+  display.print("HI: ");
+  display.print(highScore);
+
+  display.display();
 }
 
 void showVictoryScreen() {
@@ -99,11 +119,9 @@ void showVictoryScreen() {
   display.print("Score: 100 PTS");
 
   display.display();
-  delay(5000);
+  delay(4000);
 
-  score = 0;
-  dinoY = 48;
-  resetObstacle();
+  gameStarted = false; // Retorna para a tela de Start
 }
 
 void setup() {
@@ -123,9 +141,24 @@ void setup() {
 }
 
 void loop() {
+  // Tela Inicial (Aguarda clique do jogador)
+  if (!gameStarted) {
+    showStartScreen();
+    
+    if (digitalRead(BUTTON_PIN) == LOW) {
+      score = 0;
+      dinoY = 48;
+      resetObstacle();
+      gameStarted = true;
+      delay(300); // Pausa para evitar que o clique de start vire um pulo instantaneo
+    }
+    delay(50);
+    return;
+  }
+
   display.clearDisplay();
 
-  // Placar Superior
+  // Placar
   display.setTextSize(1);
   display.setCursor(0, 0);
   display.print("PTS:");
@@ -134,7 +167,7 @@ void loop() {
   display.print("HI:");
   display.print(highScore);
 
-  // Leitura do Botao
+  // Leitura do Botao (Pulo)
   if (digitalRead(BUTTON_PIN) == LOW && !isJumping) {
     dinoV = -8;
     isJumping = true;
@@ -159,12 +192,10 @@ void loop() {
 
   if (obstacleX < -16) {
     score++;
-    
-    if (score >= 50) {
+    if (score >= 100) {
       showVictoryScreen();
       return;
     }
-    
     resetObstacle();
   }
 
@@ -192,19 +223,11 @@ void loop() {
     }
   }
 
-  // Sistema de Colisao Corrigido
+  // Sistema de Colisao
   bool hit = false;
-  if (obstacleX < 28 && obstacleX > 4) { // Quando o obstaculo esta sobre o Dino
-    if (obstacleType == 3) {
-      // Passaro Alto: Se o jogador PULAR (nao estiver no chao), morre imediatamente
-      if (dinoY < 48) {
-        hit = true;
-      }
-    } else {
-      // Cactos e Passaro Baixo: Colisao normal por altura
-      if (dinoY < (obstacleY + 13) && (dinoY + 13) > obstacleY) {
-        hit = true;
-      }
+  if (obstacleX < 28 && obstacleX > 4) {
+    if (dinoY < (obstacleY + 13) && (dinoY + 13) > obstacleY) {
+      hit = true;
     }
   }
 
@@ -228,11 +251,9 @@ void loop() {
     display.print(highScore);
     
     display.display();
-    delay(3000);
+    delay(2500);
 
-    score = 0;
-    dinoY = 48;
-    resetObstacle();
+    gameStarted = false; // Retorna para a tela de Start
   }
 
   display.display();
