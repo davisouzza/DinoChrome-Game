@@ -1,14 +1,7 @@
-O erro de renderização aconteceu por dois motivos:
-
-1. **Sub-listas quebradas:** A indentação dos itens com emojis (`🌵` e `🦅`) dentro de **Obstáculos Dinâmicos** não seguiu a regra de 2 espaços do Markdown.
-2. **Excesso de negrito nas tabelas:** O uso de `**` em todas as células das tabelas deixou o código muito poluído, estourando a largura da tela.
-
-Aqui está o código ajustado e com a sintaxe corrigida para copiar e colar no seu `README.md`:
-
 ```markdown
 # 🦖 Dino Chrome Game - ESP32
 
-Um remake do clássico jogo do dinossauro do Google Chrome executado de forma nativa em um microcontrolador **ESP32**, utilizando um **Display OLED SSD1306 (I2C)** e **controles físicos por botões tácteis** em uma protoboard.
+Um remake do clássico jogo do dinossauro do Google Chrome executado de forma nativa em um microcontrolador ESP32, utilizando um Display OLED SSD1306 (I2C) e controles físicos por botões tácteis em uma protoboard.
 
 ---
 
@@ -25,16 +18,16 @@ Um remake do clássico jogo do dinossauro do Google Chrome executado de forma na
 
 ## 🎮 Demonstração e Recursos
 
-* **Tela Inicial (Start Screen):** Exibe o título do jogo e a pontuação máxima gravada.
-* **Física de Pulo e Gravidade:** Cálculo vetorial no eixo Y simulando aceleração gravitacional no pulo.
-* **Mecânica de Esquiva (Agachar):** Ajuste dinâmico de *hitbox* para esquivar de obstáculos aéreos.
-* **Obstáculos Dinâmicos:**
-  * **Cactos no chão:** Exigem que o jogador faça pulos precisos.
-  * **Pássaros no ar:** Voam na altura da cabeça, exigindo que o jogador se abaixe.
-* **Dificuldade Escalável:** A velocidade do jogo inicia em 5 e aumenta dinamicamente a cada 15 pontos (até a velocidade máxima 9).
-* **Persistência de Recorde (NVS):** O recorde (*High Score*) é salvo na memória flash interna do ESP32 utilizando a biblioteca `Preferences.h`.
-* **Tela de Vitória:** Exibe um troféu desenhado em Pixel Art ao atingir a pontuação máxima de **100 pontos**.
-* **Animações em Pixel Art:** Animações para corrida do Dino, agachamento e bater de asas dos pássaros.
+- **Tela Inicial (Start Screen):** Exibe o título do jogo e a pontuação máxima gravada.
+- **Física de Pulo e Gravidade:** Cálculo vetorial no eixo Y simulando aceleração gravitacional no pulo.
+- **Mecânica de Esquiva (Agachar):** Ajuste dinâmico de hitbox para esquivar de obstáculos aéreos.
+- **Obstáculos Dinâmicos:**
+  - Cactos no chão: Exigem que o jogador faça pulos precisos.
+  - Pássaros no ar: Voam na altura da cabeça, exigindo que o jogador se abaixe.
+- **Dificuldade Escalável:** A velocidade do jogo inicia em 5 e aumenta dinamicamente a cada 15 pontos (até a velocidade máxima 9).
+- **Persistência de Recorde (NVS):** O recorde (High Score) é salvo na memória flash interna do ESP32 utilizando a biblioteca `Preferences.h`.
+- **Tela de Vitória:** Exibe um troféu desenhado em Pixel Art ao atingir a pontuação máxima de 100 pontos.
+- **Animações em Pixel Art:** Animações para corrida do Dino, agachamento e bater de asas dos pássaros.
 
 ---
 
@@ -61,7 +54,7 @@ Um remake do clássico jogo do dinossauro do Google Chrome executado de forma na
 | SCL | GPIO 22 (D22) | Linha de Clock I2C |
 
 ### 2. Botões de Controle
-Os botões utilizam os resistores internos do ESP32 via modo `INPUT_PULLUP`, dispensando resistores externos.
+Os botões utilizam os resistores internos do ESP32 via modo INPUT_PULLUP, dispensando resistores externos.
 
 | Botão | Pino ESP32 | Conexão Secundária | Função no Jogo |
 | :--- | :---: | :---: | :--- |
@@ -89,16 +82,16 @@ Os botões utilizam os resistores internos do ESP32 via modo `INPUT_PULLUP`, dis
 
 ```
 
-1. **Tela Inicial:** O jogo inicia pausado. Pressione o botão de **Pulo (D4)** para iniciar a partida.
-2. **Cactos:** Surgem na parte inferior da tela. Pressione **D4** para pular.
-3. **Pássaros:** Voam na altura da cabeça do dinossauro. Pressione e segure **D5** para se abaixar por baixo deles.
+1. **Tela Inicial:** O jogo inicia pausado. Pressione o botão de Pulo (D4) para iniciar a partida.
+2. **Cactos:** Surgem na parte inferior da tela. Pressione D4 para pular.
+3. **Pássaros:** Voam na altura da cabeça do dinossauro. Pressione e segure D5 para se abaixar por baixo deles.
 4. **Game Over:** Ao colidir com qualquer obstáculo, o jogo exibe o placar da partida e o recorde salvo, retornando para a tela inicial.
 
 ---
 
 ## 💻 Estrutura do Código e Arquitetura
 
-O projeto foi desenvolvido no ecossistema **PlatformIO** / **VS Code** em linguagem C++ utilizando a arquitetura de estado e loop contínuo da plataforma Arduino.
+O projeto foi desenvolvido no ecossistema PlatformIO / VS Code em linguagem C++ utilizando a arquitetura de estado e loop contínuo da plataforma Arduino.
 
 ### Principais Bibliotecas:
 
@@ -122,12 +115,12 @@ int dinoTop = isDucking ? (dinoY + 8) : dinoY; // Reduz a área de impacto se es
 Caso os botões apresentem leitura contínua (jogo travado abaixado ou dando pulos/start sozinho):
 
 1. **Orientação dos Botões de 4 Pernas:**
-* Os botões tácteis possuem conexão interna direta em pares. Eles **devem ser montados atravessando a vala central (canal divisor)** da protoboard.
-* O cabo de sinal (`D4` ou `D5`) deve ser conectado na parte superior do canal central e o cabo de `GND` na parte inferior.
+* Os botões tácteis possuem conexão interna direta em pares. Eles devem ser montados atravessando a vala central (canal divisor) da protoboard.
+* O cabo de sinal (D4 ou D5) deve ser conectado na parte superior do canal central e o cabo de GND na parte inferior.
 
 
 2. **Resistores Internos:**
-* O código ativa o modo `INPUT_PULLUP`. Quando o botão não está pressionado, a leitura lógica do pino é `HIGH` (`1`). Ao pressionar o botão e fechá-lo com o `GND`, a leitura vai para `LOW` (`0`).
+* O código ativa o modo `INPUT_PULLUP`. Quando o botão não está pressionado, a leitura lógica do pino é HIGH (1). Ao pressionar o botão e fechá-lo com o GND, a leitura vai para LOW (0).
 
 
 
@@ -137,8 +130,8 @@ Caso os botões apresentem leitura contínua (jogo travado abaixado ou dando pul
 
 ### Pré-requisitos
 
-* [VS Code](https://code.visualstudio.com/) instalado.
-* Extensão [PlatformIO IDE](https://platformio.org/) instalada no VS Code.
+* VS Code instalado.
+* Extensão PlatformIO IDE instalada no VS Code.
 
 ### Passos
 
@@ -152,7 +145,7 @@ git clone [https://github.com/davisouzza/DinoChrome-Game.git](https://github.com
 2. Abra a pasta do projeto no VS Code.
 3. Aguarde o PlatformIO carregar as dependências definidas no `platformio.ini`.
 4. Conecte o ESP32 ao computador via cabo USB.
-5. Clique no ícone de **Upload** (`→`) na barra inferior do PlatformIO para compilar e gravar o código no microcontrolador.
+5. Clique no ícone de Upload (→) na barra inferior do PlatformIO para compilar e gravar o código no microcontrolador.
 
 ---
 
